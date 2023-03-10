@@ -3,7 +3,7 @@ import bodyParser from 'body-parser'
 import { Collection, Db, MongoClient } from 'mongodb'
 import dotenv from 'dotenv'
 import basicAuth, { IBasicAuthedRequest } from 'express-basic-auth'
-import { ResponseHandler } from './responseHandler'
+import { ResponseHandler } from './responseHandler.js'
 dotenv.config()
 const app = express()
 
@@ -21,6 +21,9 @@ async function connectAndRun (): Promise<void> {
     orderItems = db.collection('order_items')
     console.log('Connected successfully to Database')
     //  run the server
+    //  define a port
+    const port = process.env.PORT ?? 3000
+
     app.listen(port, () => {
       console.log(`App running on port ${port}`)
     })
@@ -64,6 +67,7 @@ function getUnauthorizedResponse (req: IBasicAuthedRequest): string {
 app.use(
   basicAuth({
     authorizeAsync: true,
+    //  eslint-disable-next-line @typescript-eslint/no-misused-promises
     authorizer: authenticateUser,
     unauthorizedResponse: getUnauthorizedResponse
   })
@@ -121,7 +125,7 @@ app.delete('/order_items/:id', (req: Request, res: Response) => {
   (async () => {
     try {
       const orderItemId = req.params.id
-      await orderItems.deleteOne({ order_item_id: orderItemId })
+      await orderItems.deleteOne({ order_item_id: orderItemId, seller_id: req.auth.user })
       return ResponseHandler.requestSuccessful({ res, message: 'Order item deleted successfully' })
     } catch (error) {
       console.error('Error reading order items.', error)
@@ -135,7 +139,14 @@ app.delete('/order_items/:id', (req: Request, res: Response) => {
 app.put('/account', (req: Request, res: Response) => {
   (async () => {
     try {
-      const i = 2
+      const { city, state } = req.body
+      if (city !== undefined) {
+        await sellers.findOneAndUpdate({ id: req.auth.user }, { $set: { city } })
+      }
+      if (state !== undefined) {
+        await sellers.findOneAndUpdate({ id: req.auth.user }, { $set: { state } })
+      }
+      return ResponseHandler.requestSuccessful({ res, message: 'Account updated successfully', payload: { city, state } })
     } catch (error) {
       return ResponseHandler.serverError(res, 'Error updating account')
     }
@@ -143,6 +154,3 @@ app.put('/account', (req: Request, res: Response) => {
 })
 
 await connectAndRun()
-
-//  define a port
-const port = process.env.PORT ?? 3000
