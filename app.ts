@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 dotenv.config();
@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 const uri = process.env.MONGODB_CONNECTION_STRING!;
 // Create a new MongoClient
 const client = new MongoClient(uri);
-async function connectToDb() {
+async function connectAndRun() {
   try {
     await client.connect();
     await client.db("techkraft").command({ ping: 1 });
@@ -38,7 +38,17 @@ async function connectToDb() {
     await client.close();
   }
 }
-connectToDb();
+app.get("/order_items", (req: Request, res: Response) => {
+  res.send("welcome");
+});
+app.delete("/order_items/:id", (req: Request, res: Response) => {
+  res.send("welcome");
+});
+app.put("/account", (req: Request, res: Response) => {
+  res.send("welcome");
+});
+connectAndRun();
 
 //define a port
 const port = process.env.PORT || 3000;
+
