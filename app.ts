@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import { Collection, Db, MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import basicAuth, { IBasicAuthedRequest } from "express-basic-auth";
+import { ResponseHandler } from "./responseHandler";
 dotenv.config();
 const app = express();
 
@@ -32,16 +33,8 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin,X-Requested-With,Content-Type,Accept"
-  );
-  res.setHeader("Access-Control-Allow-Methods", [
-    "PUT",
-    "POST",
-    "GET",
-    "OPTIONS",
-  ]);
+  res.header("Access-Control-Allow-Headers", "Origin,X-Requested-With,Content-Type,Accept");
+  res.setHeader("Access-Control-Allow-Methods", ["PUT", "POST", "GET", "OPTIONS"]);
   next();
 });
 
@@ -53,10 +46,7 @@ const authenticateUser = async (
 ) => {
   try {
     const user = await sellers.findOne({ seller_id });
-    if (
-      user &&
-      basicAuth.safeCompare(seller_zip_code_prefix, user.seller_zip_code_prefix)
-    ) {
+    if (user && basicAuth.safeCompare(seller_zip_code_prefix, user.seller_zip_code_prefix)) {
       callback(null, true);
     } else {
       callback(null, false);
@@ -67,9 +57,7 @@ const authenticateUser = async (
   }
 };
 function getUnauthorizedResponse(req: IBasicAuthedRequest) {
-  return req.auth
-    ? "Credentials " + req.auth.user + ":" + req.auth.password + " rejected"
-    : "No credentials provided";
+  return "Invalid Credentials";
 }
 
 app.use(
