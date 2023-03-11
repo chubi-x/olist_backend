@@ -3,7 +3,7 @@ import bodyParser from 'body-parser'
 import { Collection, Db, MongoClient } from 'mongodb'
 import dotenv from 'dotenv'
 import basicAuth, { IBasicAuthedRequest } from 'express-basic-auth'
-import { ResponseHandler } from './responseHandler'
+import { ResponseHandler } from './responseHandler.js' // take off extension before running test (some problem with module resolution)
 dotenv.config()
 
 const app = express()

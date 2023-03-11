@@ -1,16 +1,14 @@
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import request from 'supertest'
 import app from '../app'
-import { MongoClient, Db } from 'mongodb'
+import { MongoClient } from 'mongodb'
 let mongo: MongoMemoryServer
-let db: Db
 let client: MongoClient
 // create a new in-memory database
 beforeAll(async () => {
   mongo = await MongoMemoryServer.create()
   const mongoUri = mongo.getUri()
   client = await MongoClient.connect(mongoUri, {})
-  db = client.db('techkraft')
 })
 afterAll(async () => {
   if (mongo !== null) {

@@ -9,6 +9,7 @@ const DEFAULT_SUCCESS_STATUS_CODE = 200
  * @class ResponseHandler
  * @description class representing the response handler methods
  */
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class ResponseHandler {
   /**
    * A method used to send server errors
@@ -63,7 +64,7 @@ export class ResponseHandler {
       success: true,
       message: message ?? DEFAULT_SUCCESS_MESSAGE
     }
-    if (!payload) {
+    if (payload === undefined) {
       return res.status(status).send(responseObject)
     }
     return res.status(status).send({ ...responseObject, data: payload })
