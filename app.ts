@@ -3,8 +3,9 @@ import bodyParser from 'body-parser'
 import { Collection, Db, MongoClient } from 'mongodb'
 import dotenv from 'dotenv'
 import basicAuth, { IBasicAuthedRequest } from 'express-basic-auth'
-import { ResponseHandler } from './responseHandler.js'
+import { ResponseHandler } from './responseHandler'
 dotenv.config()
+
 const app = express()
 
 /** DB CONNECTION */
@@ -20,8 +21,6 @@ async function connectAndRun (): Promise<void> {
     sellers = db.collection('sellers')
     orderItems = db.collection('order_items')
     console.log('Connected successfully to Database')
-    //  run the server
-    //  define a port
     const port = process.env.PORT ?? 3000
 
     app.listen(port, () => {
@@ -32,6 +31,7 @@ async function connectAndRun (): Promise<void> {
     await client.close()
   }
 }
+await connectAndRun()
 app.use(express.json())
 app.use(bodyParser.json())
 app.use(express.urlencoded({ extended: true }))
@@ -125,8 +125,8 @@ app.delete('/order_items/:id', (req: Request, res: Response) => {
   (async () => {
     try {
       const orderItemId = req.params.id
-      await orderItems.deleteOne({ order_item_id: orderItemId, seller_id: req.auth.user })
-      return ResponseHandler.requestSuccessful({ res, message: 'Order item deleted successfully' })
+      await orderItems.deleteMany({ order_item_id: orderItemId, seller_id: req.auth.user })
+      return ResponseHandler.requestSuccessful({ res, message: 'Order item deleted successfully', status: 204 })
     } catch (error) {
       console.error('Error reading order items.', error)
       return ResponseHandler.serverError(
@@ -141,10 +141,10 @@ app.put('/account', (req: Request, res: Response) => {
     try {
       const { city, state } = req.body
       if (city !== undefined) {
-        await sellers.findOneAndUpdate({ id: req.auth.user }, { $set: { city } })
+        await sellers.findOneAndUpdate({ id: req.auth.user }, { $set: { seller_city: city } })
       }
       if (state !== undefined) {
-        await sellers.findOneAndUpdate({ id: req.auth.user }, { $set: { state } })
+        await sellers.findOneAndUpdate({ id: req.auth.user }, { $set: { seller_state: state } })
       }
       return ResponseHandler.requestSuccessful({ res, message: 'Account updated successfully', payload: { city, state } })
     } catch (error) {
@@ -153,4 +153,4 @@ app.put('/account', (req: Request, res: Response) => {
   })().then().catch(() => {})
 })
 
-await connectAndRun()
+export default app
